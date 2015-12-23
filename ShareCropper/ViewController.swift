@@ -17,12 +17,41 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     let sixteenNine = 1.77
     let americanWS = 1.85
     let seventyMM = 2.2
-    let anamorphic = 2.39 //could be 2.35
+    let anamorphic = 2.35 //could be 2.39
     let cinerama = 2.77
-    var ratioArr: [String] = []
+    
+    
+    
+    let ratiosArr: [Double] = [ 1.33,    //"Academy"
+                                1.66,       //"European"
+                                1.77,       //"HDTV" 16:9
+                                1.85,       //"American"
+                                2.2,        //"70mm"
+                                2.35,       //"Anamorphic"
+                                2.77 ]      //"Cinerama"
+    
+    var pickerTitleArr = [  "Academy 1.33",
+                            "European 1.66",
+                            "HDTV 16:9",
+                            "American 1:85",
+                            "70mm 2.2",
+                            "Anamorphic 2.35",
+                            "Cinerama 2.77" ]
 
     @IBOutlet weak var pickerView: UIPickerView!
-    @IBOutlet weak var imageView: UIImageView!
+    @IBOutlet weak var cropImageView: UIImageView!
+    
+    @IBAction func cropPressed(sender: UIButton) {
+        cropImage()
+    }
+    
+    func cropImage() {
+        let ratio = ratiosArr[pickerView.selectedRowInComponent(0)]
+        let cropRectSize = CGSizeMake(cropImageView.bounds.width, cropImageView.bounds.width / CGFloat(ratio))
+        cropImageView.bounds.size = cropRectSize
+        print(ratio)
+    }
+    
     //var newMedia: Bool? //Use when implement camera
     
     func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
@@ -30,11 +59,11 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     }
     
     func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return ratioArr.count
+        return pickerTitleArr.count
     }
     
     func pickerView(pickerView: UIPickerView, attributedTitleForRow row: Int, forComponent component: Int) -> NSAttributedString? {
-        return NSAttributedString(string: ratioArr[row], attributes: [NSForegroundColorAttributeName:UIColor.whiteColor()])
+        return NSAttributedString(string: pickerTitleArr[row], attributes: [NSForegroundColorAttributeName:UIColor.whiteColor()])
     }
     
     @IBAction func useCameraRoll(sender: AnyObject) {
@@ -43,7 +72,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             
             imagePicker.delegate = self
             imagePicker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
-            imagePicker.mediaTypes = [kUTTypeImage as NSString]
+            imagePicker.mediaTypes = [kUTTypeImage as String]
             imagePicker.allowsEditing = false
             
             self.presentViewController(imagePicker, animated: true, completion: nil)
@@ -53,14 +82,12 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         
     }
     
-    func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [NSObject : AnyObject]) {
+    func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
         let mediaType = info[UIImagePickerControllerMediaType] as! String
-        
         self.dismissViewControllerAnimated(true, completion: nil)
-        if mediaType == kUTTypeImage as! String {
-            let image = info[UIImagePickerControllerOriginalImage] as! UIImage
-            imageView.image = image
-            
+        if mediaType == kUTTypeImage as String {
+            let pickedImage = info[UIImagePickerControllerOriginalImage] as! UIImage
+            cropImageView.image = pickedImage;
 //            if (newMedia == true) {
 //                UIImageWriteToSavedPhotosAlbum(image, self,
 //                    "image:didFinishSavingWithError:contextInfo:", nil)
@@ -68,22 +95,23 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
 //                // Code to support video here
 //            }
         }
-        
     }
     
     func imagePickerControllerDidCancel(picker: UIImagePickerController) {
         self.dismissViewControllerAnimated(true, completion: nil)
     }
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        ratioArr = ["Academy (1.33:1)","European (1.66:1)","HD (16:9)","American WS (1.85:1)","70mm (2.2:1)","Anamorphic WS (2.39:1)","Cinerama (2.77:1)"]
         pickerView.delegate = self
         pickerView.dataSource = self
-        view.backgroundColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
-        imageView.backgroundColor = UIColor(red: 0.3, green: 0.3, blue: 0.3, alpha: 1)
+        view.backgroundColor = UIColor(red: 0.1, green: 0.1, blue: 0.1, alpha: 1)
+        cropImage()
         // Do any additional setup after loading the view, typically from a nib.
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
     }
 
     override func didReceiveMemoryWarning() {

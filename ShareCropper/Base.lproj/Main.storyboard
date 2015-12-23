@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7706" systemVersion="14D136" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9531" systemVersion="14F27" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="BYZ-38-t0r">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7703"/>
-        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
@@ -19,85 +19,65 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <pickerView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Tvj-zi-t3F">
-                                <rect key="frame" x="0.0" y="446" width="600" height="162"/>
+                                <rect key="frame" x="0.0" y="386" width="584" height="124"/>
                                 <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="162" id="bwk-dP-KQy"/>
+                                    <constraint firstAttribute="height" constant="124" id="dfH-9w-NW6"/>
                                 </constraints>
                             </pickerView>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="dB9-Mu-Wcg">
-                                <rect key="frame" x="125" y="36" width="350" height="350"/>
-                                <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jDh-6U-BIh">
+                                <rect key="frame" x="16" y="518" width="35" height="30"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="344" id="06y-MN-OX7"/>
-                                    <constraint firstAttribute="width" relation="lessThanOrEqual" constant="372" id="HtN-8s-gfZ"/>
-                                    <constraint firstAttribute="height" relation="lessThanOrEqual" constant="300" id="cOG-jU-pwR"/>
-                                    <constraint firstAttribute="width" constant="344" id="faF-dK-PZh"/>
-                                    <constraint firstAttribute="width" secondItem="dB9-Mu-Wcg" secondAttribute="height" multiplier="1:1" id="gx3-hj-rMg"/>
-                                    <constraint firstAttribute="width" constant="350" id="vcf-Ic-pdp"/>
+                                    <constraint firstAttribute="width" constant="35" id="1qu-Jv-BfI"/>
                                 </constraints>
-                                <variation key="default">
-                                    <mask key="constraints">
-                                        <exclude reference="06y-MN-OX7"/>
-                                        <exclude reference="HtN-8s-gfZ"/>
-                                        <exclude reference="cOG-jU-pwR"/>
-                                        <exclude reference="faF-dK-PZh"/>
-                                    </mask>
-                                </variation>
-                            </imageView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="tfr-DE-6iN">
-                                <rect key="frame" x="260" y="394" width="80" height="30"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="30" id="mFz-Rz-sAu"/>
-                                </constraints>
-                                <state key="normal" title="Load Photo">
+                                <state key="normal" title="Load">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
-                                    <action selector="useCameraRoll:" destination="BYZ-38-t0r" eventType="touchUpInside" id="6FU-Tu-AAy"/>
+                                    <action selector="useCameraRoll:" destination="BYZ-38-t0r" eventType="touchUpInside" id="A6c-k5-Qvs"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="l5V-fU-en2">
+                                <rect key="frame" x="538" y="518" width="34" height="30"/>
+                                <state key="normal" title="Save">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                            </button>
+                            <view clipsSubviews="YES" contentMode="scaleAspectFill" translatesAutoresizingMaskIntoConstraints="NO" id="F64-TS-CXg" customClass="UIImageView">
+                                <rect key="frame" x="16" y="20" width="568" height="358"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="wkT-XM-fhG">
+                                <rect key="frame" x="283" y="518" width="34" height="30"/>
+                                <state key="normal" title="Crop"/>
+                                <connections>
+                                    <action selector="cropPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="4d1-pp-8Eu"/>
                                 </connections>
                             </button>
                         </subviews>
                         <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstAttribute="centerX" secondItem="dB9-Mu-Wcg" secondAttribute="centerX" id="1OM-Oz-w30"/>
-                            <constraint firstItem="dB9-Mu-Wcg" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="8" id="Cmw-XB-QqJ"/>
-                            <constraint firstItem="tfr-DE-6iN" firstAttribute="top" secondItem="dB9-Mu-Wcg" secondAttribute="bottom" constant="8" id="GHI-gX-hqv"/>
-                            <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="dB9-Mu-Wcg" secondAttribute="trailing" constant="8" id="IhX-lW-AgG"/>
-                            <constraint firstItem="dB9-Mu-Wcg" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="J6O-qi-nYK"/>
-                            <constraint firstItem="tfr-DE-6iN" firstAttribute="top" secondItem="dB9-Mu-Wcg" secondAttribute="bottom" constant="98" id="Oo0-35-5gg"/>
-                            <constraint firstAttribute="trailing" secondItem="Tvj-zi-t3F" secondAttribute="trailing" id="Ox1-Gj-C0E"/>
-                            <constraint firstItem="dB9-Mu-Wcg" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="16" id="S2D-Le-UMA"/>
-                            <constraint firstItem="tfr-DE-6iN" firstAttribute="trailing" secondItem="dB9-Mu-Wcg" secondAttribute="trailing" id="Vck-b5-RSI"/>
-                            <constraint firstItem="Tvj-zi-t3F" firstAttribute="top" secondItem="dB9-Mu-Wcg" secondAttribute="bottom" constant="8" symbolic="YES" id="WVC-qc-Zml"/>
-                            <constraint firstItem="Tvj-zi-t3F" firstAttribute="bottom" secondItem="wfy-db-euE" secondAttribute="top" constant="8" symbolic="YES" id="XjV-ON-Nkw"/>
-                            <constraint firstItem="dB9-Mu-Wcg" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="112" id="YE5-2f-O7N"/>
-                            <constraint firstItem="Tvj-zi-t3F" firstAttribute="centerX" secondItem="dB9-Mu-Wcg" secondAttribute="centerX" id="Z0F-ub-u4a"/>
-                            <constraint firstItem="tfr-DE-6iN" firstAttribute="centerX" secondItem="dB9-Mu-Wcg" secondAttribute="centerX" id="cy5-xI-lpY"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="dB9-Mu-Wcg" secondAttribute="trailing" constant="8" id="d1G-bW-a1x"/>
-                            <constraint firstItem="Tvj-zi-t3F" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="dES-rc-wz5"/>
-                            <constraint firstItem="Tvj-zi-t3F" firstAttribute="top" relation="greaterThanOrEqual" secondItem="tfr-DE-6iN" secondAttribute="bottom" constant="8" symbolic="YES" id="hkW-xy-MhF"/>
-                            <constraint firstItem="dB9-Mu-Wcg" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="8" id="pN5-w0-OQT"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="dB9-Mu-Wcg" secondAttribute="trailing" constant="112" id="y39-yY-5Hc"/>
+                            <constraint firstItem="jDh-6U-BIh" firstAttribute="top" secondItem="Tvj-zi-t3F" secondAttribute="bottom" constant="8" symbolic="YES" id="1rb-WL-5j7"/>
+                            <constraint firstItem="jDh-6U-BIh" firstAttribute="leading" secondItem="F64-TS-CXg" secondAttribute="leading" id="220-LE-4FV"/>
+                            <constraint firstItem="F64-TS-CXg" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="-4" id="LNW-2R-A1l"/>
+                            <constraint firstItem="Tvj-zi-t3F" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="N3D-N8-e0h"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="l5V-fU-en2" secondAttribute="trailing" constant="8" id="Q80-mz-2Cc"/>
+                            <constraint firstItem="F64-TS-CXg" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="RjE-em-d0k"/>
+                            <constraint firstItem="wkT-XM-fhG" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="WjA-wz-w6B"/>
+                            <constraint firstItem="wkT-XM-fhG" firstAttribute="centerX" secondItem="F64-TS-CXg" secondAttribute="centerX" id="h1d-xB-n0l"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="jDh-6U-BIh" secondAttribute="bottom" constant="8" symbolic="YES" id="hRw-f9-FlD"/>
+                            <constraint firstItem="F64-TS-CXg" firstAttribute="trailing" secondItem="Tvj-zi-t3F" secondAttribute="trailing" id="ip5-nj-jbO"/>
+                            <constraint firstItem="Tvj-zi-t3F" firstAttribute="top" secondItem="F64-TS-CXg" secondAttribute="bottom" constant="8" symbolic="YES" id="mor-wE-LtO"/>
+                            <constraint firstItem="wkT-XM-fhG" firstAttribute="baseline" secondItem="l5V-fU-en2" secondAttribute="baseline" id="nw0-u5-4Ir"/>
+                            <constraint firstItem="jDh-6U-BIh" firstAttribute="baseline" secondItem="wkT-XM-fhG" secondAttribute="baseline" id="sL5-f8-yeS"/>
                         </constraints>
-                        <variation key="default">
-                            <mask key="constraints">
-                                <exclude reference="Cmw-XB-QqJ"/>
-                                <exclude reference="IhX-lW-AgG"/>
-                                <exclude reference="J6O-qi-nYK"/>
-                                <exclude reference="YE5-2f-O7N"/>
-                                <exclude reference="d1G-bW-a1x"/>
-                                <exclude reference="pN5-w0-OQT"/>
-                                <exclude reference="y39-yY-5Hc"/>
-                                <exclude reference="WVC-qc-Zml"/>
-                                <exclude reference="Z0F-ub-u4a"/>
-                                <exclude reference="Oo0-35-5gg"/>
-                                <exclude reference="Vck-b5-RSI"/>
-                            </mask>
-                        </variation>
                     </view>
+                    <toolbarItems/>
+                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
-                        <outlet property="imageView" destination="dB9-Mu-Wcg" id="fK7-Q1-XQY"/>
+                        <outlet property="cropImageView" destination="F64-TS-CXg" id="6nf-fa-GIw"/>
                         <outlet property="pickerView" destination="Tvj-zi-t3F" id="ZtH-Of-IkE"/>
                     </connections>
                 </viewController>
