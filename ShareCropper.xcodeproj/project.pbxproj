@@ -13,6 +13,7 @@
 		844C4F821BA5028C0059D4DC /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 844C4F811BA5028C0059D4DC /* Images.xcassets */; };
 		844C4F851BA5028C0059D4DC /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 844C4F831BA5028C0059D4DC /* LaunchScreen.xib */; };
 		844C4F911BA5028C0059D4DC /* ShareCropperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844C4F901BA5028C0059D4DC /* ShareCropperTests.swift */; };
+		84C9F5F21C2B8C8B000FC27D /* cinema cropper.png in Resources */ = {isa = PBXBuildFile; fileRef = 84C9F5F11C2B8C8B000FC27D /* cinema cropper.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,6 +37,7 @@
 		844C4F8A1BA5028C0059D4DC /* ShareCropperTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ShareCropperTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		844C4F8F1BA5028C0059D4DC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		844C4F901BA5028C0059D4DC /* ShareCropperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCropperTests.swift; sourceTree = "<group>"; };
+		84C9F5F11C2B8C8B000FC27D /* cinema cropper.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cinema cropper.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,6 +81,7 @@
 			children = (
 				844C4F7A1BA5028C0059D4DC /* AppDelegate.swift */,
 				844C4F7C1BA5028C0059D4DC /* ViewController.swift */,
+				84C9F5F11C2B8C8B000FC27D /* cinema cropper.png */,
 				844C4F7E1BA5028C0059D4DC /* Main.storyboard */,
 				844C4F811BA5028C0059D4DC /* Images.xcassets */,
 				844C4F831BA5028C0059D4DC /* LaunchScreen.xib */,
@@ -162,6 +165,7 @@
 				TargetAttributes = {
 					844C4F741BA5028C0059D4DC = {
 						CreatedOnToolsVersion = 6.4;
+						DevelopmentTeam = 2TRSY42B5K;
 					};
 					844C4F891BA5028C0059D4DC = {
 						CreatedOnToolsVersion = 6.4;
@@ -194,6 +198,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				844C4F801BA5028C0059D4DC /* Main.storyboard in Resources */,
+				84C9F5F21C2B8C8B000FC27D /* cinema cropper.png in Resources */,
 				844C4F851BA5028C0059D4DC /* LaunchScreen.xib in Resources */,
 				844C4F821BA5028C0059D4DC /* Images.xcassets in Resources */,
 			);
@@ -344,11 +349,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = ShareCropper/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.adamwayland.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
@@ -357,11 +365,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = ShareCropper/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.adamwayland.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
@@ -370,10 +381,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -390,10 +397,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-				);
 				INFOPLIST_FILE = ShareCropperTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.adamwayland.$(PRODUCT_NAME:rfc1034identifier)";

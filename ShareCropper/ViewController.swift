@@ -10,47 +10,42 @@
 import UIKit
 import MobileCoreServices
 
-class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIPickerViewDelegate, UIPickerViewDataSource {
+class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIPickerViewDelegate, UIPickerViewDataSource, UIScrollViewDelegate {
     
+    
+    //Aspect ratio Constants
     let academy = 1.33
     let europeanWS = 1.66
     let sixteenNine = 1.77
     let americanWS = 1.85
     let seventyMM = 2.2
-    let anamorphic = 2.35 //could be 2.39
+    let anamorphic = 2.35 //also 2.39
     let cinerama = 2.77
     
-    
-    
-    let ratiosArr: [Double] = [ 1.33,    //"Academy"
-                                1.66,       //"European"
-                                1.77,       //"HDTV" 16:9
-                                1.85,       //"American"
-                                2.2,        //"70mm"
-                                2.35,       //"Anamorphic"
-                                2.77 ]      //"Cinerama"
+    var ratiosArr: [Double] = []
     
     var pickerTitleArr = [  "Academy 1.33",
-                            "European 1.66",
+                            "European WS 1.66",
                             "HDTV 16:9",
-                            "American 1:85",
+                            "American WS 1.85",
                             "70mm 2.2",
                             "Anamorphic 2.35",
                             "Cinerama 2.77" ]
+    
+    var imageView: UIImageView!
+    var scrollView: UIScrollView!
+    
+    var pickedImage: UIImage = UIImage(named: "cinema cropper.png")!
 
     @IBOutlet weak var pickerView: UIPickerView!
-    @IBOutlet weak var cropImageView: UIImageView!
+    
     
     @IBAction func cropPressed(sender: UIButton) {
-        cropImage()
+        scrollView.frame.size = getCropSize()
+        scrollView.frame.origin.y = getCropOrigin()
     }
     
-    func cropImage() {
-        let ratio = ratiosArr[pickerView.selectedRowInComponent(0)]
-        let cropRectSize = CGSizeMake(cropImageView.bounds.width, cropImageView.bounds.width / CGFloat(ratio))
-        cropImageView.bounds.size = cropRectSize
-        print(ratio)
-    }
+    //MARK: PICKERVIEW
     
     //var newMedia: Bool? //Use when implement camera
     
@@ -86,8 +81,13 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         let mediaType = info[UIImagePickerControllerMediaType] as! String
         self.dismissViewControllerAnimated(true, completion: nil)
         if mediaType == kUTTypeImage as String {
-            let pickedImage = info[UIImagePickerControllerOriginalImage] as! UIImage
-            cropImageView.image = pickedImage;
+            pickedImage = info[UIImagePickerControllerOriginalImage] as! UIImage
+            for view in scrollView.subviews {
+                view.removeFromSuperview()
+            }
+            imageView = UIImageView(image: pickedImage)
+            scrollView.addSubview(imageView)
+            setZoomScale()
 //            if (newMedia == true) {
 //                UIImageWriteToSavedPhotosAlbum(image, self,
 //                    "image:didFinishSavingWithError:contextInfo:", nil)
@@ -100,20 +100,59 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     func imagePickerControllerDidCancel(picker: UIImagePickerController) {
         self.dismissViewControllerAnimated(true, completion: nil)
     }
+
+    //MARK: SCROLLVIEW
+    
+    //Adjusts the size of the scrollView to the appropriate aspect ratio chosen in the pickerController
+    func getCropSize() -> CGSize {
+        let ratio = ratiosArr[pickerView.selectedRowInComponent(0)]
+        let cropRectSize = CGSizeMake(view.bounds.width, view.bounds.width / CGFloat(ratio))
+        return cropRectSize
+    }
+    
+    func setZoomScale() {
+        scrollView.contentSize = imageView.bounds.size
+        let widthScale = scrollView.bounds.size.width / imageView.bounds.size.width
+        scrollView.minimumZoomScale = widthScale
+        scrollView.maximumZoomScale = 1.0
+        scrollView.zoomScale = widthScale
+        }
+    
+    func viewForZoomingInScrollView(scrollView: UIScrollView) -> UIView? {
+        return scrollView.subviews[0]
+    }
+    
+    func scrollViewDidZoom(scrollView: UIScrollView) {
+//        centerScrollViewContents()
+    }
+    
+    //MARK: LIFECYCLE
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        ratiosArr = [ academy, europeanWS, sixteenNine, americanWS, seventyMM, anamorphic, cinerama ]
         pickerView.delegate = self
         pickerView.dataSource = self
-        view.backgroundColor = UIColor(red: 0.1, green: 0.1, blue: 0.1, alpha: 1)
-        cropImage()
-        // Do any additional setup after loading the view, typically from a nib.
+        scrollView = UIScrollView(frame: CGRect(origin: view.bounds.origin, size: getCropSize()))
+        scrollView.frame.origin.y = getCropOrigin()
+        scrollView.delegate = self
+        view.backgroundColor = UIColor.blackColor()
+        imageView = UIImageView(image: pickedImage)
+        view.addSubview(scrollView)
+        scrollView.addSubview(imageView)
+        setZoomScale()
+    }
+    
+    func getCropOrigin() -> CGFloat {
+        return ((view.bounds.height - pickerView.frame.height) / 2) - (scrollView.frame.height / 2)
     }
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
+        scrollView.layer.borderWidth = 1
+        scrollView.layer.borderColor = UIColor.redColor().CGColor
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
