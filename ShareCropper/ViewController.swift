@@ -45,6 +45,23 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         scrollView.frame.origin.y = getCropOrigin()
     }
     
+    @IBAction func savePressed(sender: UIButton) {
+        var cropRect = CGRect()
+        cropRect.origin = scrollView.contentOffset
+        cropRect.size = scrollView.bounds.size
+        
+        let scale = 1.0 / scrollView.zoomScale
+        
+        cropRect.origin.x *= scale
+        cropRect.origin.y *= scale
+        cropRect.size.width *= scale
+        cropRect.size.height *= scale
+        
+        let imageRef = CGImageCreateWithImageInRect(pickedImage.CGImage, cropRect)
+        let imageToSave = UIImage(CGImage: imageRef!, scale: 1.0, orientation: pickedImage.imageOrientation)
+        UIImageWriteToSavedPhotosAlbum(imageToSave, nil, nil, nil)
+        
+    }
     //MARK: PICKERVIEW
     
     //var newMedia: Bool? //Use when implement camera
