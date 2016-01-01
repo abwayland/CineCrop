@@ -39,13 +39,8 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
 
     @IBOutlet weak var pickerView: UIPickerView!
     
-    
-    @IBAction func cropPressed(sender: UIButton) {
-        scrollView.frame.size = getCropSize()
-        scrollView.frame.origin.y = getCropOrigin()
-    }
-    
-    @IBAction func savePressed(sender: UIButton) {
+    @IBOutlet weak var saveLabel: UILabel!
+    @IBAction func savePressed(sender: AnyObject) {
         var cropRect = CGRect()
         cropRect.origin = scrollView.contentOffset
         cropRect.size = scrollView.bounds.size
@@ -58,10 +53,24 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         cropRect.size.height *= scale
         
         let imageRef = CGImageCreateWithImageInRect(pickedImage.CGImage, cropRect)
+        //TODO: Orientation random v
         let imageToSave = UIImage(CGImage: imageRef!, scale: 1.0, orientation: pickedImage.imageOrientation)
+        //UIImageWriteToSavedPhotosAlbum(imageToSave, self, "image:didFinishSavingWithError:contextInfo:", nil)
         UIImageWriteToSavedPhotosAlbum(imageToSave, nil, nil, nil)
-        
     }
+    
+    func image(image: UIImage, didFinishSavingWithError error: NSError?, contextInfo:UnsafePointer<Void>) {
+        if error == nil {
+            let ac = UIAlertController(title: "Saved!", message: "Your altered image has been saved to your photos.", preferredStyle: .Alert)
+            ac.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
+            presentViewController(ac, animated: true, completion: nil)
+        } else {
+            let ac = UIAlertController(title: "Save error", message: error?.localizedDescription, preferredStyle: .Alert)
+            ac.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
+            presentViewController(ac, animated: true, completion: nil)
+        }
+    }
+    
     //MARK: PICKERVIEW
     
     //var newMedia: Bool? //Use when implement camera
@@ -77,6 +86,13 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     func pickerView(pickerView: UIPickerView, attributedTitleForRow row: Int, forComponent component: Int) -> NSAttributedString? {
         return NSAttributedString(string: pickerTitleArr[row], attributes: [NSForegroundColorAttributeName:UIColor.whiteColor()])
     }
+    
+    func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        scrollView.frame.size = getCropSize()
+        scrollView.frame.origin.y = getCropOrigin()
+    }
+    
+    //MARK: CAMERA ROLL
     
     @IBAction func useCameraRoll(sender: AnyObject) {
         if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.SavedPhotosAlbum) {
@@ -139,10 +155,6 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         return scrollView.subviews[0]
     }
     
-    func scrollViewDidZoom(scrollView: UIScrollView) {
-//        centerScrollViewContents()
-    }
-    
     //MARK: LIFECYCLE
     
     override func viewDidLoad() {
@@ -150,6 +162,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         ratiosArr = [ academy, europeanWS, sixteenNine, americanWS, seventyMM, anamorphic, cinerama ]
         pickerView.delegate = self
         pickerView.dataSource = self
+        pickerView.selectRow(3, inComponent: 0, animated: false)
         scrollView = UIScrollView(frame: CGRect(origin: view.bounds.origin, size: getCropSize()))
         scrollView.frame.origin.y = getCropOrigin()
         scrollView.delegate = self
@@ -161,7 +174,15 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     }
     
     func getCropOrigin() -> CGFloat {
-        return ((view.bounds.height - pickerView.frame.height) / 2) - (scrollView.frame.height / 2)
+        //return ((view.bounds.height - pickerView.frame.height) / 2) - (scrollView.frame.height / 2)
+        if let parent = self.parentViewController as! UINavigationController! {
+            let navBarHeight = parent.navigationBar.frame.height
+            let position = ((view.bounds.height - pickerView.frame.height) / 2) - (scrollView.frame.height / 2) + navBarHeight
+            print(position)
+            return position
+        } else {
+            return ((view.bounds.height - pickerView.frame.height) / 2) - (scrollView.frame.height / 2)
+        }
     }
     
     override func viewWillAppear(animated: Bool) {
