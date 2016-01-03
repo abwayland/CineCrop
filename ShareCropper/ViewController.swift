@@ -40,6 +40,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     @IBOutlet weak var pickerView: UIPickerView!
     
     @IBOutlet weak var saveLabel: UILabel!
+    
     @IBAction func savePressed(sender: AnyObject) {
         var cropRect = CGRect()
         cropRect.origin = scrollView.contentOffset
@@ -52,11 +53,13 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         cropRect.size.width *= scale
         cropRect.size.height *= scale
         
-        let imageRef = CGImageCreateWithImageInRect(pickedImage.CGImage, cropRect)
-        //TODO: Orientation random v
-        let imageToSave = UIImage(CGImage: imageRef!, scale: 1.0, orientation: pickedImage.imageOrientation)
-        //UIImageWriteToSavedPhotosAlbum(imageToSave, self, "image:didFinishSavingWithError:contextInfo:", nil)
-        UIImageWriteToSavedPhotosAlbum(imageToSave, nil, nil, nil)
+        let orientedImage = fixOrientation(pickedImage)
+        
+        if let imageRef = CGImageCreateWithImageInRect(orientedImage.CGImage, cropRect) {
+            let imageToSave = UIImage(CGImage: imageRef, scale: 1.0, orientation: orientedImage.imageOrientation)
+            print("iV: \(imageView.image!.imageOrientation) \npI: \(pickedImage.imageOrientation)")
+            UIImageWriteToSavedPhotosAlbum(imageToSave, self, "image:didFinishSavingWithError:contextInfo:", nil)
+        }
     }
     
     func image(image: UIImage, didFinishSavingWithError error: NSError?, contextInfo:UnsafePointer<Void>) {
@@ -69,6 +72,22 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             ac.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
             presentViewController(ac, animated: true, completion: nil)
         }
+    }
+    
+    func fixOrientation(img:UIImage) -> UIImage {
+        
+        if (img.imageOrientation == UIImageOrientation.Up) {
+            return img;
+        }
+        
+        UIGraphicsBeginImageContextWithOptions(img.size, false, img.scale);
+        let rect = CGRect(x: 0, y: 0, width: img.size.width, height: img.size.height)
+        img.drawInRect(rect)
+        
+        let normalizedImage : UIImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext();
+        return normalizedImage;
+        
     }
     
     //MARK: PICKERVIEW
