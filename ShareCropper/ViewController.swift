@@ -7,8 +7,13 @@
 //
 //  ShareCropper is an image and potentially video cropping app that provides the standard film aspect ratios as well as custom aspect ratios.
 
+
+// CHECK IF ALL NECESSARY
 import UIKit
 import MobileCoreServices
+import Foundation
+import AVFoundation
+import CoreMedia
 
 class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIPickerViewDelegate, UIPickerViewDataSource, UIScrollViewDelegate {
     
@@ -34,6 +39,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     var imageView: UIImageView!
     var scrollView: UIScrollView!
+    var avPlayer: AVPlayer!
     
     var pickedImage: UIImage = UIImage(named: "cinema cropper.png")!
 
@@ -119,7 +125,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             
             imagePicker.delegate = self
             imagePicker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
-            imagePicker.mediaTypes = [kUTTypeImage as String]
+            imagePicker.mediaTypes = [kUTTypeImage as String, kUTTypeMovie as String]
             imagePicker.allowsEditing = false
             
             self.presentViewController(imagePicker, animated: true, completion: nil)
@@ -132,21 +138,44 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
         let mediaType = info[UIImagePickerControllerMediaType] as! String
         self.dismissViewControllerAnimated(true, completion: nil)
+        for view in scrollView.subviews {
+            view.removeFromSuperview()
+        }
         if mediaType == kUTTypeImage as String {
             pickedImage = info[UIImagePickerControllerOriginalImage] as! UIImage
-            for view in scrollView.subviews {
-                view.removeFromSuperview()
-            }
             imageView = UIImageView(image: pickedImage)
             scrollView.addSubview(imageView)
-            setZoomScale()
+            setZoomScale(imageView.bounds.size)
+        } else if mediaType == kUTTypeMovie as String {
+            let videoClipURL = info[UIImagePickerControllerMediaURL] as! NSURL
+            
+            let asset = AVAsset(URL: videoClipURL)
+            
+            let item = AVPlayerItem(asset: asset)
+            
+            avPlayer = AVPlayer(playerItem: item)
+            
+            let layer = AVPlayerLayer(player: avPlayer)
+            avPlayer.actionAtItemEnd = AVPlayerActionAtItemEnd.None
+            layer.videoGravity = AVLayerVideoGravityResizeAspectFill
+            
+//            let tracksARR = asset.tracksWithMediaType(AVMediaTypeVideo)
+//            let videoTrack = tracksARR[0]
+//            imageView.bounds.size = videoTrack.naturalSize
+            
+            layer.frame = imageView.bounds
+            
+            imageView = UIImageView()
+            imageView.layer.addSublayer(layer)
+            scrollView.addSubview(imageView)
+            setZoomScale(imageView.bounds.size)
+            
+            avPlayer.play()
+        }
 //            if (newMedia == true) {
 //                UIImageWriteToSavedPhotosAlbum(image, self,
 //                    "image:didFinishSavingWithError:contextInfo:", nil)
-//            } else if mediaType.isEqualToString(kUTTypeMovie as! String) {
-//                // Code to support video here
-//            }
-        }
+//
     }
     
     func imagePickerControllerDidCancel(picker: UIImagePickerController) {
@@ -162,16 +191,16 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         return cropRectSize
     }
     
-    func setZoomScale() {
-        scrollView.contentSize = imageView.bounds.size
-        let widthScale = scrollView.bounds.size.width / imageView.bounds.size.width
+    func setZoomScale(size: CGSize) {
+        scrollView.contentSize = size
+        let widthScale = scrollView.bounds.size.width / size.width
         scrollView.minimumZoomScale = widthScale
         scrollView.maximumZoomScale = 1.0
         scrollView.zoomScale = widthScale
         }
     
     func viewForZoomingInScrollView(scrollView: UIScrollView) -> UIView? {
-        return scrollView.subviews[0]
+        return imageView
     }
     
     //MARK: LIFECYCLE
@@ -189,7 +218,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         imageView = UIImageView(image: pickedImage)
         view.addSubview(scrollView)
         scrollView.addSubview(imageView)
-        setZoomScale()
+        setZoomScale(imageView.bounds.size)
     }
     
     func getCropOrigin() -> CGFloat {
