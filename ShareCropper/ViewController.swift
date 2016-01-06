@@ -17,8 +17,9 @@ import CoreMedia
 
 class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIPickerViewDelegate, UIPickerViewDataSource, UIScrollViewDelegate {
     
+    //MARK: Constants and Variables
     
-    //Aspect ratio Constants
+    // Aspect ratio constants
     let academy = 1.33
     let europeanWS = 1.66
     let sixteenNine = 1.77
@@ -27,9 +28,12 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     let anamorphic = 2.35 //also 2.39
     let cinerama = 2.77
     
+    
+    // Array of aspect ratios
     var ratiosArr: [Double] = []
     
-    var pickerTitleArr = [  "Academy 1.33",
+    // Title for UIPickerController
+    let pickerTitleArr = [  "Academy 1.33",
                             "European WS 1.66",
                             "HDTV 16:9",
                             "American WS 1.85",
@@ -37,34 +41,43 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                             "Anamorphic 2.35",
                             "Cinerama 2.77" ]
     
+    // Variables
     var imageView: UIImageView!
     var scrollView: UIScrollView!
     var avPlayer: AVPlayer!
-    
+    var mediaType: String!
     var pickedImage: UIImage = UIImage(named: "cinema cropper.png")!
+    
+    //MARK: Outlets and Actions
 
     @IBOutlet weak var pickerView: UIPickerView!
     
     @IBOutlet weak var saveLabel: UILabel!
     
+    //MARK: Save
+    
     @IBAction func savePressed(sender: AnyObject) {
-        var cropRect = CGRect()
-        cropRect.origin = scrollView.contentOffset
-        cropRect.size = scrollView.bounds.size
-        
-        let scale = 1.0 / scrollView.zoomScale
-        
-        cropRect.origin.x *= scale
-        cropRect.origin.y *= scale
-        cropRect.size.width *= scale
-        cropRect.size.height *= scale
-        
-        let orientedImage = fixOrientation(pickedImage)
-        
-        if let imageRef = CGImageCreateWithImageInRect(orientedImage.CGImage, cropRect) {
-            let imageToSave = UIImage(CGImage: imageRef, scale: 1.0, orientation: orientedImage.imageOrientation)
-            print("iV: \(imageView.image!.imageOrientation) \npI: \(pickedImage.imageOrientation)")
-            UIImageWriteToSavedPhotosAlbum(imageToSave, self, "image:didFinishSavingWithError:contextInfo:", nil)
+        if mediaType == kUTTypeImage as String {
+            var cropRect = CGRect()
+            cropRect.origin = scrollView.contentOffset
+            cropRect.size = scrollView.bounds.size
+            
+            let scale = 1.0 / scrollView.zoomScale
+            
+            cropRect.origin.x *= scale
+            cropRect.origin.y *= scale
+            cropRect.size.width *= scale
+            cropRect.size.height *= scale
+            
+            let orientedImage = fixOrientation(pickedImage)
+            
+            if let imageRef = CGImageCreateWithImageInRect(orientedImage.CGImage, cropRect) {
+                let imageToSave = UIImage(CGImage: imageRef, scale: 1.0, orientation: orientedImage.imageOrientation)
+                print("iV: \(imageView.image!.imageOrientation) \npI: \(pickedImage.imageOrientation)")
+                UIImageWriteToSavedPhotosAlbum(imageToSave, self, "image:didFinishSavingWithError:contextInfo:", nil)
+            }
+        } else if mediaType == kUTTypeMovie as String {
+            print("saved video")
         }
     }
     
@@ -129,53 +142,48 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             imagePicker.allowsEditing = false
             
             self.presentViewController(imagePicker, animated: true, completion: nil)
-            
-            //newMedia = false
         }
         
     }
     
     func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
-        let mediaType = info[UIImagePickerControllerMediaType] as! String
+        mediaType = info[UIImagePickerControllerMediaType] as! String
         self.dismissViewControllerAnimated(true, completion: nil)
         for view in scrollView.subviews {
             view.removeFromSuperview()
         }
         if mediaType == kUTTypeImage as String {
             pickedImage = info[UIImagePickerControllerOriginalImage] as! UIImage
-            imageView = UIImageView(image: pickedImage)
-            scrollView.addSubview(imageView)
-            setZoomScale(imageView.bounds.size)
         } else if mediaType == kUTTypeMovie as String {
             let videoClipURL = info[UIImagePickerControllerMediaURL] as! NSURL
             
-            let asset = AVAsset(URL: videoClipURL)
-            
-            let item = AVPlayerItem(asset: asset)
-            
-            avPlayer = AVPlayer(playerItem: item)
-            
-            let layer = AVPlayerLayer(player: avPlayer)
-            avPlayer.actionAtItemEnd = AVPlayerActionAtItemEnd.None
-            layer.videoGravity = AVLayerVideoGravityResizeAspectFill
-            
-//            let tracksARR = asset.tracksWithMediaType(AVMediaTypeVideo)
-//            let videoTrack = tracksARR[0]
-//            imageView.bounds.size = videoTrack.naturalSize
-            
-            layer.frame = imageView.bounds
-            
-            imageView = UIImageView()
-            imageView.layer.addSublayer(layer)
-            scrollView.addSubview(imageView)
-            setZoomScale(imageView.bounds.size)
-            
-            avPlayer.play()
+            if let snapshot = vidSnapshot(videoClipURL) {
+                pickedImage = snapshot
+            }
+        } else {
+            print("Unrecognized Media Type")
+            return
         }
-//            if (newMedia == true) {
-//                UIImageWriteToSavedPhotosAlbum(image, self,
-//                    "image:didFinishSavingWithError:contextInfo:", nil)
-//
+        imageView = UIImageView(image: pickedImage)
+        scrollView.addSubview(imageView)
+        setZoomScale(imageView.bounds.size)
+    }
+    
+    func vidSnapshot(vidURL: NSURL) -> UIImage? {
+        let asset = AVURLAsset(URL: vidURL)
+        let generator = AVAssetImageGenerator(asset: asset)
+        generator.appliesPreferredTrackTransform = true
+        
+        let timestamp = CMTime(seconds: 1, preferredTimescale: 60)
+        
+        do {
+            let imageRef = try generator.copyCGImageAtTime(timestamp, actualTime: nil)
+            return UIImage(CGImage: imageRef)
+        }
+        catch let error as NSError {
+            print("Image generatior failed with error: \(error)")
+            return nil
+        }
     }
     
     func imagePickerControllerDidCancel(picker: UIImagePickerController) {
@@ -191,6 +199,17 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         return cropRectSize
     }
     
+    func getCropOrigin() -> CGFloat {
+        if let parent = self.parentViewController as! UINavigationController! {
+            let navBarHeight = parent.navigationBar.frame.height
+            let position = ((view.bounds.height - pickerView.frame.height) / 2) - (scrollView.frame.height / 2) + navBarHeight
+            print(position)
+            return position
+        } else {
+            return ((view.bounds.height - pickerView.frame.height) / 2) - (scrollView.frame.height / 2)
+        }
+    }
+
     func setZoomScale(size: CGSize) {
         scrollView.contentSize = size
         let widthScale = scrollView.bounds.size.width / size.width
@@ -219,18 +238,6 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         view.addSubview(scrollView)
         scrollView.addSubview(imageView)
         setZoomScale(imageView.bounds.size)
-    }
-    
-    func getCropOrigin() -> CGFloat {
-        //return ((view.bounds.height - pickerView.frame.height) / 2) - (scrollView.frame.height / 2)
-        if let parent = self.parentViewController as! UINavigationController! {
-            let navBarHeight = parent.navigationBar.frame.height
-            let position = ((view.bounds.height - pickerView.frame.height) / 2) - (scrollView.frame.height / 2) + navBarHeight
-            print(position)
-            return position
-        } else {
-            return ((view.bounds.height - pickerView.frame.height) / 2) - (scrollView.frame.height / 2)
-        }
     }
     
     override func viewWillAppear(animated: Bool) {
