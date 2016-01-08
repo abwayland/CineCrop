@@ -14,6 +14,7 @@ import MobileCoreServices
 import Foundation
 import AVFoundation
 import CoreMedia
+import AssetsLibrary
 
 class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIPickerViewDelegate, UIPickerViewDataSource, UIScrollViewDelegate {
     
@@ -47,6 +48,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     var avPlayer: AVPlayer!
     var mediaType: String!
     var pickedImage: UIImage = UIImage(named: "cinema cropper.png")!
+    var asset: AVAsset!
     
     //MARK: Outlets and Actions
 
@@ -57,17 +59,18 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     //MARK: Save
     
     @IBAction func savePressed(sender: AnyObject) {
+        var cropRect = CGRect()
+        cropRect.origin = scrollView.contentOffset
+        cropRect.size = scrollView.bounds.size
+        
+        let scale = 1.0 / scrollView.zoomScale
+        
+        cropRect.origin.x *= scale
+        cropRect.origin.y *= scale
+        cropRect.size.width *= scale
+        cropRect.size.height *= scale
+        
         if mediaType == kUTTypeImage as String {
-            var cropRect = CGRect()
-            cropRect.origin = scrollView.contentOffset
-            cropRect.size = scrollView.bounds.size
-            
-            let scale = 1.0 / scrollView.zoomScale
-            
-            cropRect.origin.x *= scale
-            cropRect.origin.y *= scale
-            cropRect.size.width *= scale
-            cropRect.size.height *= scale
             
             let orientedImage = fixOrientation(pickedImage)
             
@@ -77,7 +80,102 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                 UIImageWriteToSavedPhotosAlbum(imageToSave, self, "image:didFinishSavingWithError:contextInfo:", nil)
             }
         } else if mediaType == kUTTypeMovie as String {
-            print("saved video")
+            
+            let videoComposition = AVMutableVideoComposition()
+            let track = asset.tracksWithMediaType(AVMediaTypeVideo)[0]
+            videoComposition.frameDuration = CMTimeMake(1, 60)
+            videoComposition.renderSize = cropRect.size
+            //to prevent green lines on bottom and side, rendersize must be divisible by 2
+            videoComposition.renderSize.height -= videoComposition.renderSize.height % 2
+            videoComposition.renderSize.width -= videoComposition.renderSize.width % 2
+
+            let preferredTransform = track.preferredTransform
+            
+            var orientation: String = "up"
+            
+//            if (preferredTransform.a == 0 && preferredTransform.d == 0 && (preferredTransform.b == 1.0 || preferredTransform.b == -1.0) && (preferredTransform.c == 1.0 || preferredTransform.c == -1.0)) {
+//                print("portrait")
+//                isPortrait = true
+//            } else {
+//                print("landscape")
+//                isPortrait = false
+//            }
+            
+//            //values found @ http://stackoverflow.com/questions/4627940/how-to-detect-iphone-sdk-if-a-video-file-was-recorded-in-portrait-orientation
+         
+            if (preferredTransform.a == 1 && preferredTransform.d == 1 && preferredTransform.b == 0 && preferredTransform.c == 0) {
+                orientation = "left"
+            } else if (preferredTransform.a == -1 && preferredTransform.d == -1 && preferredTransform.b == 0 && preferredTransform.c == 0) {
+                orientation = "right"
+            } else if (preferredTransform.a == 0 && preferredTransform.d == 0 && preferredTransform.b == -1 && preferredTransform.c == 1) {
+                orientation = "down"
+            }
+            print(orientation)
+            
+            var tx: CGFloat = 0.0
+            var ty: CGFloat = 0.0
+            
+            switch orientation {
+            case "up": print("switchUP")
+                tx = -scrollView.contentOffset.y * scale
+            case "left": print("switchLEFT")
+                ty = -scrollView.contentOffset.y * scale
+            case "right": print("switchRight")
+                ty = scrollView.contentOffset.y * scale
+            case "down": print("switchDown")
+                tx = scrollView.contentOffset.y * scale
+            default: print("default")
+            }
+
+            let transformer = AVMutableVideoCompositionLayerInstruction(assetTrack: track)
+
+            let t1 = CGAffineTransformTranslate(preferredTransform, tx, ty)
+
+            let finalTransform = t1
+
+            transformer.setTransform(finalTransform, atTime: kCMTimeZero)
+            
+            let instructions = AVMutableVideoCompositionInstruction()
+            instructions.timeRange = CMTimeRangeMake(kCMTimeZero, CMTimeMakeWithSeconds(60, 30))
+            
+            instructions.layerInstructions = [transformer]
+            videoComposition.instructions = [instructions]
+            
+            let dateFormatter = NSDateFormatter()
+            dateFormatter.dateStyle = NSDateFormatterStyle.MediumStyle
+            dateFormatter.timeStyle = NSDateFormatterStyle.ShortStyle
+    
+            let docPath = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] as String
+            let dateString = dateFormatter.stringFromDate(NSDate())
+            let exportPath = docPath.stringByAppendingFormat("/\(dateString).mov")
+            
+            let exportURL = NSURL.fileURLWithPath(exportPath)
+            print(exportURL.path)
+            
+            //TODO: Should save as .mp4 as well?
+            //exportURL.URLByAppendingPathExtension(UTTypeCopyPreferredTagWithClass(AVFileTypeQuickTimeMovie, kUTTagClassFilenameExtension)!.takeUnretainedValue() as String)
+
+            let exporter: AVAssetExportSession = AVAssetExportSession(asset: asset!, presetName: AVAssetExportPresetHighestQuality)!
+            exporter.videoComposition = videoComposition
+            exporter.outputFileType = AVFileTypeQuickTimeMovie
+            exporter.outputURL = exportURL
+                
+            exporter.shouldOptimizeForNetworkUse = true
+            
+            exporter.exportAsynchronouslyWithCompletionHandler {
+//                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
+//                        if exporter.status == AVAssetExportSessionStatus.Completed {
+                            let assetsLibrary = ALAssetsLibrary()
+                            if assetsLibrary.videoAtPathIsCompatibleWithSavedPhotosAlbum(exporter.outputURL) {
+//                                assetsLibrary.writeVideoAtPathToSavedPhotosAlbum(exporter.outputURL, completionBlock: nil)
+                                UISaveVideoAtPathToSavedPhotosAlbum(exporter.outputURL!.path!, self, "image:didFinishSavingWithError:contextInfo:", nil)
+                                print("Video Saved to Camera Roll")
+                            } else {
+                                print("Video not compaltible with Camera Roll")
+                            }
+//                        }
+//                    })
+            }
         }
     }
     
@@ -106,6 +204,10 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         let normalizedImage : UIImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext();
         return normalizedImage;
+        
+    }
+    
+    func saveVid(asset: AVAsset) {
         
     }
     
@@ -156,7 +258,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             pickedImage = info[UIImagePickerControllerOriginalImage] as! UIImage
         } else if mediaType == kUTTypeMovie as String {
             let videoClipURL = info[UIImagePickerControllerMediaURL] as! NSURL
-            
+            asset = AVAsset(URL: videoClipURL)
             if let snapshot = vidSnapshot(videoClipURL) {
                 pickedImage = snapshot
             }
