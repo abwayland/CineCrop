@@ -64,7 +64,7 @@
                             </connections>
                         </barButtonItem>
                         <barButtonItem style="plain" systemItem="flexibleSpace" id="frr-O3-qqH"/>
-                        <barButtonItem systemItem="save" id="bDF-9Y-Ml8">
+                        <barButtonItem enabled="NO" systemItem="save" id="bDF-9Y-Ml8">
                             <connections>
                                 <action selector="savePressed:" destination="BYZ-38-t0r" id="Dqk-S3-FCe"/>
                             </connections>
@@ -74,6 +74,7 @@
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="pickerView" destination="Tvj-zi-t3F" id="ZtH-Of-IkE"/>
+                        <outlet property="saveButton" destination="bDF-9Y-Ml8" id="18O-15-fuJ"/>
                         <outlet property="saveLabel" destination="52E-1n-iaY" id="Ptf-Ee-KTz"/>
                     </connections>
                 </viewController>
