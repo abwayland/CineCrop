@@ -42,9 +42,10 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     // Variables
     var imageView: UIImageView!
     var scrollView: UIScrollView!
-    var avPlayer: AVPlayer!
+    var pickedImage: UIImage!
+    
+    var cropRect: CGRect!
     var mediaType: String!
-    var pickedImage: UIImage = UIImage(named: "cinema cropper.png")!
     var asset: AVAsset!
     
     //MARK: Outlets and Actions
@@ -57,10 +58,19 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     @IBOutlet weak var saveButton: UIBarButtonItem!
     
+    func setCropRect() {
+        
+    }
+    
+    func getFrame() {
+        
+    }
+    
     @IBAction func savePressed(sender: AnyObject) {
         
         //creates a cropRect based on size of scrollView and scales according to zoom
-        var cropRect = CGRect()
+        cropRect = CGRect()
+        let origin =
         cropRect.origin = scrollView.contentOffset
         cropRect.size = scrollView.bounds.size
         
@@ -215,7 +225,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     }
     
     func pickerView(pickerView: UIPickerView, attributedTitleForRow row: Int, forComponent component: Int) -> NSAttributedString? {
-        return NSAttributedString(string: pickerTitleArr[row], attributes: [NSForegroundColorAttributeName:UIColor.whiteColor()])
+        return NSAttributedString(string: pickerTitleArr[row], attributes: [NSForegroundColorAttributeName:UIColor.lightGrayColor()])
     }
     
     func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
@@ -308,13 +318,8 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     }
     
     func getCropOrigin() -> CGFloat {
-        if let parent = self.parentViewController as! UINavigationController! {
-            let navBarHeight = parent.navigationBar.frame.height
-            let position = ((view.bounds.height - pickerView.frame.height) / 2) - (scrollView.frame.height / 2) + navBarHeight
+            let position = (view.bounds.height / 3) - (scrollView.frame.height / 2)
             return position
-        } else {
-            return ((view.bounds.height - pickerView.frame.height) / 2) - (scrollView.frame.height / 2)
-        }
     }
 
     func setZoomScale(size: CGSize) {
@@ -342,17 +347,18 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         scrollView = UIScrollView(frame: CGRect(origin: view.bounds.origin, size: getCropSize()))
         scrollView.frame.origin.y = getCropOrigin()
         scrollView.delegate = self
-        view.backgroundColor = UIColor.blackColor()
         imageView = UIImageView(image: pickedImage)
         view.addSubview(scrollView)
         scrollView.addSubview(imageView)
         setZoomScale(imageView.bounds.size)
+
     }
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         scrollView.layer.borderWidth = 1
-        scrollView.layer.borderColor = UIColor.redColor().CGColor
+        scrollView.layer.borderColor = UIColor.whiteColor().CGColor
+
     }
     
     override func didReceiveMemoryWarning() {

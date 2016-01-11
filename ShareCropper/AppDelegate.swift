@@ -16,6 +16,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
+        UINavigationBar.appearance().barTintColor = UIColor.darkGrayColor()
+        UIToolbar.appearance().barTintColor = UIColor.darkGrayColor()
+        UINavigationBar.appearance().titleTextAttributes = [NSFontAttributeName:UIFont(name: "Panavision", size: 21)!,NSForegroundColorAttributeName:UIColor.whiteColor()]
+        if floor(NSFoundationVersionNumber) >= NSFoundationVersionNumber_iOS_7_0 {
+            UINavigationBar.appearance().translucent = false
+            UIToolbar.appearance().translucent = false
+        }
         return true
     }
 
