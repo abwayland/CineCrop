@@ -18,17 +18,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     //MARK: Constants and Variables
     
-    // Aspect ratio constants
-    let academy = 1.33
-    let europeanWS = 1.66
-    let sixteenNine = 1.77
-    let americanWS = 1.85
-    let seventyMM = 2.2
-    let anamorphic = 2.35 //also 2.39
-    let cinerama = 2.77
-    
-    // Array of aspect ratios
-    var ratiosArr: [Double] = []
+    let model = CinemaCropperModel()
     
     // Title for UIPickerController
     let pickerTitleArr = [  "Academy [1.33:1]",
@@ -42,103 +32,65 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     // Variables
     var imageView: UIImageView!
     var scrollView: UIScrollView!
-    var pickedImage: UIImage!
     
-    var cropRect: CGRect!
-    var mediaType: String!
-    var asset: AVAsset!
-    
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     //MARK: Outlets and Actions
 
     @IBOutlet weak var pickerView: UIPickerView!
     
-    @IBOutlet weak var saveLabel: UILabel!
-    
     //MARK: Save
+    
+    @IBOutlet weak var errLabel: UILabel!
     
     @IBOutlet weak var saveButton: UIBarButtonItem!
     
-    func setCropRect() {
-        
-    }
-    
-    func getFrame() {
-        
-    }
-    
     @IBAction func savePressed(sender: AnyObject) {
-        
+        if errLabel.hidden == false {
+            errLabel.hidden = true
+        }
         //creates a cropRect based on size of scrollView and scales according to zoom
-        cropRect = CGRect()
-        let origin =
-        cropRect.origin = scrollView.contentOffset
-        cropRect.size = scrollView.bounds.size
-        
-        let scale = 1.0 / scrollView.zoomScale
-        
-        cropRect.origin.x *= scale
-        cropRect.origin.y *= scale
-        cropRect.size.width *= scale
-        cropRect.size.height *= scale
+        model.setFrame(origin: scrollView.contentOffset, size: scrollView.bounds.size, zoom: scrollView.zoomScale)
         
 //      PHOTO
-        if mediaType == kUTTypeImage as String {
+        if model.mediaType == kUTTypeImage as String {
             
-            let orientedImage = fixOrientation(pickedImage)
+            let orientedImage = fixOrientation(model.pickedImage!)
             
-            if let imageRef = CGImageCreateWithImageInRect(orientedImage.CGImage, cropRect) {
+            if let imageRef = CGImageCreateWithImageInRect(orientedImage.CGImage, model.getFrame()) {
                 let imageToSave = UIImage(CGImage: imageRef, scale: 1.0, orientation: orientedImage.imageOrientation)
                 UIImageWriteToSavedPhotosAlbum(imageToSave, self, "image:didFinishSavingWithError:contextInfo:", nil)
             }
             
 //      VIDEO
-        } else if mediaType == kUTTypeMovie as String {
+        } else if model.mediaType == kUTTypeMovie as String {
             
-            let videoComposition = AVMutableVideoComposition()
-            let track = asset.tracksWithMediaType(AVMediaTypeVideo)[0]
+            exportVideo()
+
+        }
+    }
+    
+    func exportVideo() {
+        
+        //Create video composition
+        let videoComposition = AVMutableVideoComposition()
+        if let track = model.asset?.tracksWithMediaType(AVMediaTypeVideo)[0] {
             videoComposition.frameDuration = CMTimeMake(1, 60)
-            videoComposition.renderSize = cropRect.size
+            videoComposition.renderSize = model.getFrame().size
             
             //to prevent green lines on bottom and side, rendersize must be divisible by 2
             videoComposition.renderSize.height -= videoComposition.renderSize.height % 2
             videoComposition.renderSize.width -= videoComposition.renderSize.width % 2
-
+            
             let preferredTransform = track.preferredTransform
             
-            var orientation: String = "up"
-            
-//          values found @ http://stackoverflow.com/questions/4627940/how-to-detect-iphone-sdk-if-a-video-file-was-recorded-in-portrait-orientation
-         
-            if (preferredTransform.a == 1 && preferredTransform.d == 1 && preferredTransform.b == 0 && preferredTransform.c == 0) {
-                orientation = "left"
-            } else if (preferredTransform.a == -1 && preferredTransform.d == -1 && preferredTransform.b == 0 && preferredTransform.c == 0) {
-                orientation = "right"
-            } else if (preferredTransform.a == 0 && preferredTransform.d == 0 && preferredTransform.b == -1 && preferredTransform.c == 1) {
-                orientation = "down"
-            }
+            let orientation = findOrientation(preferredTransform)
             
             //Transforms are based on orientation
-            var tx: CGFloat = 0.0
-            var ty: CGFloat = 0.0
             
-            switch orientation {
-                case "up": print("switchUP")
-                    tx = -scrollView.contentOffset.y * scale
-                case "left": print("switchLEFT")
-                    ty = -scrollView.contentOffset.y * scale
-                case "right": print("switchRight")
-                    ty = scrollView.contentOffset.y * scale
-                case "down": print("switchDown")
-                    tx = scrollView.contentOffset.y * scale
-                default: print("default")
-            }
-
+            let finalTransform = createTransform(orientation, preferredTransform: preferredTransform)
+            
             let transformer = AVMutableVideoCompositionLayerInstruction(assetTrack: track)
-
-            let t1 = CGAffineTransformTranslate(preferredTransform, tx, ty)
-
-            let finalTransform = t1
-
+            
             transformer.setTransform(finalTransform, atTime: kCMTimeZero)
             
             let instructions = AVMutableVideoCompositionInstruction()
@@ -147,27 +99,21 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             instructions.layerInstructions = [transformer]
             videoComposition.instructions = [instructions]
             
-            let dateFormatter = NSDateFormatter()
-            dateFormatter.dateStyle = NSDateFormatterStyle.MediumStyle
-            dateFormatter.timeStyle = NSDateFormatterStyle.ShortStyle
-    
-            // Create save path based on date
-            let docPath = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] as String
-            let dateString = dateFormatter.stringFromDate(NSDate())
-            let exportPath = docPath.stringByAppendingFormat("/\(dateString).mov")
-            
-            let exportURL = NSURL.fileURLWithPath(exportPath)
+            let exportURL = createExportURL()
             
             //TODO: Should save as .mp4 as well?
             //exportURL.URLByAppendingPathExtension(UTTypeCopyPreferredTagWithClass(AVFileTypeQuickTimeMovie, kUTTagClassFilenameExtension)!.takeUnretainedValue() as String)
-
-            let exporter: AVAssetExportSession = AVAssetExportSession(asset: asset!, presetName: AVAssetExportPresetHighestQuality)!
+            
+            let exporter: AVAssetExportSession = AVAssetExportSession(asset: model.asset!, presetName: AVAssetExportPresetHighestQuality)!
             exporter.videoComposition = videoComposition
             exporter.outputFileType = AVFileTypeQuickTimeMovie
             exporter.outputURL = exportURL
             exporter.shouldOptimizeForNetworkUse = true
-            
+            activityIndicator.startAnimating()
             exporter.exportAsynchronouslyWithCompletionHandler {
+                dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                    self.activityIndicator.stopAnimating()
+                })
                 if exporter.status == AVAssetExportSessionStatus.Completed {
                     let assetsLibrary = ALAssetsLibrary()
                     if assetsLibrary.videoAtPathIsCompatibleWithSavedPhotosAlbum(exporter.outputURL) {
@@ -176,11 +122,76 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                     } else {
                         print("Video not compaltible with Camera Roll")
                     }
+                } else {
+                    self.errLabel.hidden = false
                 }
             }
+            
         } else {
-            print("Error: Image")
+            print("Error: Video")
         }
+    }
+    
+    func createExportURL() -> NSURL {
+        
+        let dateFormatter = NSDateFormatter()
+        dateFormatter.dateStyle = NSDateFormatterStyle.MediumStyle
+        dateFormatter.timeStyle = NSDateFormatterStyle.ShortStyle
+        
+        // Create save path based on date
+        let docPath = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] as String
+        let dateString = dateFormatter.stringFromDate(NSDate())
+        let exportPath = docPath.stringByAppendingFormat("/\(dateString).mov")
+        
+        let exportURL = NSURL.fileURLWithPath(exportPath)
+        
+        return exportURL
+        
+    }
+    
+    func createTransform(orientation: String, preferredTransform: CGAffineTransform) -> CGAffineTransform {
+        
+        var tx: CGFloat = 0.0
+        var ty: CGFloat = 0.0
+        
+        switch orientation {
+        case "up": print("switchUP")
+        tx = -scrollView.contentOffset.y * model.scale
+        ty = scrollView.contentOffset.x * model.scale
+        case "left": print("switchLEFT")
+        tx = -scrollView.contentOffset.x * model.scale
+        ty = -scrollView.contentOffset.y * model.scale
+        case "right": print("switchRight")
+        tx = scrollView.contentOffset.x * model.scale
+        ty = scrollView.contentOffset.y * model.scale
+        case "down": print("switchDown")
+        tx = scrollView.contentOffset.y * model.scale
+        ty = -scrollView.contentOffset.x * model.scale
+        default: print("default")
+        }
+        
+        let t1 = CGAffineTransformTranslate(preferredTransform, tx, ty)
+        
+        return t1
+        
+    }
+    
+    func findOrientation(preferredTransform: CGAffineTransform) -> String {
+        
+        var orientation: String = "up"
+        
+        //          values found @ http://stackoverflow.com/questions/4627940/how-to-detect-iphone-sdk-if-a-video-file-was-recorded-in-portrait-orientation
+        
+        if (preferredTransform.a == 1 && preferredTransform.d == 1 && preferredTransform.b == 0 && preferredTransform.c == 0) {
+            orientation = "left"
+        } else if (preferredTransform.a == -1 && preferredTransform.d == -1 && preferredTransform.b == 0 && preferredTransform.c == 0) {
+            orientation = "right"
+        } else if (preferredTransform.a == 0 && preferredTransform.d == 0 && preferredTransform.b == -1 && preferredTransform.c == 1) {
+            orientation = "down"
+        }
+        
+        return orientation
+        
     }
     
     func image(image: UIImage, didFinishSavingWithError error: NSError?, contextInfo:UnsafePointer<Void>) {
@@ -229,12 +240,17 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     }
     
     func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        scrollView.frame.size = getCropSize()
-        scrollView.frame.origin.y = getCropOrigin()
-        setZoomScale(pickedImage.size)
-        if scrollView.contentSize.height > scrollView.bounds.size.height || scrollView.contentSize.width > scrollView.bounds.size.width {
-            centerImageInScrollView()
+        UIView.animateWithDuration(0.5) { () -> Void in
+            self.scrollView.frame.size = self.getCropSize()
+            self.scrollView.frame.origin.y = self.getCropOrigin()
+            if let zoom = self.model.pickedImage?.size {
+                self.setZoomScale(zoom)
+            }
+            if self.scrollView.contentSize.height > self.scrollView.bounds.size.height || self.scrollView.contentSize.width > self.scrollView.bounds.size.width {
+                self.centerImageInScrollView()
+            }
         }
+        
     }
     
     func centerImageInScrollView() {
@@ -263,24 +279,24 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     }
     
     func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
-        mediaType = info[UIImagePickerControllerMediaType] as! String
+        model.mediaType = info[UIImagePickerControllerMediaType] as? String
         self.dismissViewControllerAnimated(true, completion: nil)
         for view in scrollView.subviews {
             view.removeFromSuperview()
         }
-        if mediaType == kUTTypeImage as String {
-            pickedImage = info[UIImagePickerControllerOriginalImage] as! UIImage
-        } else if mediaType == kUTTypeMovie as String {
+        if model.mediaType == kUTTypeImage as String {
+            model.pickedImage = info[UIImagePickerControllerOriginalImage] as? UIImage
+        } else if model.mediaType == kUTTypeMovie as String {
             let videoClipURL = info[UIImagePickerControllerMediaURL] as! NSURL
-            asset = AVAsset(URL: videoClipURL)
+            model.asset = AVAsset(URL: videoClipURL)
             if let snapshot = vidSnapshot(videoClipURL) {
-                pickedImage = snapshot
+                model.pickedImage = snapshot
             }
         } else {
             print("Unrecognized Media Type")
             return
         }
-        imageView = UIImageView(image: pickedImage)
+        imageView = UIImageView(image: model.pickedImage)
         scrollView.addSubview(imageView)
         setZoomScale(imageView.bounds.size)
         centerImageInScrollView()
@@ -312,7 +328,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     //Adjusts the size of the scrollView to the appropriate aspect ratio chosen in the pickerController
     func getCropSize() -> CGSize {
-        let ratio = ratiosArr[pickerView.selectedRowInComponent(0)]
+        let ratio = model.ratiosArr[pickerView.selectedRowInComponent(0)]
         let cropRectSize = CGSizeMake(view.bounds.width, view.bounds.width / CGFloat(ratio))
         return cropRectSize
     }
@@ -340,14 +356,12 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        ratiosArr = [ academy, europeanWS, sixteenNine, americanWS, seventyMM, anamorphic, cinerama ]
         pickerView.delegate = self
         pickerView.dataSource = self
         pickerView.selectRow(3, inComponent: 0, animated: false)
         scrollView = UIScrollView(frame: CGRect(origin: view.bounds.origin, size: getCropSize()))
-        scrollView.frame.origin.y = getCropOrigin()
         scrollView.delegate = self
-        imageView = UIImageView(image: pickedImage)
+        imageView = UIImageView(image: model.pickedImage)
         view.addSubview(scrollView)
         scrollView.addSubview(imageView)
         setZoomScale(imageView.bounds.size)
@@ -356,6 +370,8 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
+        
+        scrollView.frame.origin.y = getCropOrigin()
         scrollView.layer.borderWidth = 1
         scrollView.layer.borderColor = UIColor.whiteColor().CGColor
 
