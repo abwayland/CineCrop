@@ -11,20 +11,32 @@
             <rect key="frame" x="0.0" y="0.0" width="480" height="480"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dJw-Rb-giL">
+                <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dJw-Rb-giL">
                     <rect key="frame" x="0.0" y="436" width="480" height="44"/>
                     <items>
-                        <barButtonItem title="Item" id="yTs-Tf-YN6"/>
+                        <barButtonItem systemItem="add" id="yTs-Tf-YN6"/>
+                        <barButtonItem style="plain" systemItem="flexibleSpace" id="HIV-LY-mST"/>
+                        <barButtonItem enabled="NO" systemItem="save" id="QKF-xL-lv7"/>
                     </items>
+                    <color key="barTintColor" red="0.29803922772407532" green="0.29803922772407532" blue="0.29803922772407532" alpha="1" colorSpace="calibratedRGB"/>
                 </toolbar>
-                <navigationBar contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4nY-A1-Fwr">
+                <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4nY-A1-Fwr">
                     <rect key="frame" x="0.0" y="0.0" width="480" height="44"/>
+                    <color key="barTintColor" red="0.29803922772407532" green="0.29803922772407532" blue="0.29803922772407532" alpha="1" colorSpace="calibratedRGB"/>
                     <items>
-                        <navigationItem title="Title" id="ybL-bB-eEY"/>
+                        <navigationItem id="ybL-bB-eEY"/>
                     </items>
                 </navigationBar>
             </subviews>
             <color key="backgroundColor" red="0.20000000298023224" green="0.20000000298023224" blue="0.20000000298023224" alpha="1" colorSpace="calibratedRGB"/>
+            <constraints>
+                <constraint firstAttribute="bottom" secondItem="dJw-Rb-giL" secondAttribute="bottom" id="9Gp-Ri-7bk"/>
+                <constraint firstAttribute="trailing" secondItem="dJw-Rb-giL" secondAttribute="trailing" id="Kvd-4H-QUM"/>
+                <constraint firstItem="dJw-Rb-giL" firstAttribute="trailing" secondItem="4nY-A1-Fwr" secondAttribute="trailing" id="Pkl-W9-YVW"/>
+                <constraint firstItem="dJw-Rb-giL" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="QN8-Gz-2nm"/>
+                <constraint firstItem="4nY-A1-Fwr" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="dKy-Fa-sLP"/>
+                <constraint firstItem="4nY-A1-Fwr" firstAttribute="leading" secondItem="dJw-Rb-giL" secondAttribute="leading" id="qLR-xY-rM5"/>
+            </constraints>
             <nil key="simulatedStatusBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
             <point key="canvasLocation" x="548" y="455"/>

@@ -6,7 +6,7 @@
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
-        <!--Cinema Cropper-->
+        <!--Cine Crop-->
         <scene sceneID="tne-QT-ifu">
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="CinemaCropper" customModuleProvider="target" sceneMemberID="viewController">
@@ -76,7 +76,7 @@
                             </connections>
                         </barButtonItem>
                     </toolbarItems>
-                    <navigationItem key="navigationItem" title="Cinema Cropper" id="fLu-ku-5OC"/>
+                    <navigationItem key="navigationItem" title="Cine Crop" id="fLu-ku-5OC"/>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="activityIndicator" destination="N2Q-xD-0So" id="pFJ-Ng-3hx"/>
