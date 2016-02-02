@@ -5,7 +5,7 @@
 //  Created by Adam Wayland on 9/12/15.
 //  Copyright (c) 2015 Adam Wayland. All rights reserved.
 //
-//  ShareCropper is an image and potentially video cropping app that provides the standard film aspect ratios as well as custom aspect ratios.
+//  ShareCropper is an image and video cropping app that provides traditional motion picture aspect ratios as well as custom aspect ratios.
 
 
 import UIKit
@@ -14,7 +14,7 @@ import AVFoundation
 import CoreMedia
 import AssetsLibrary
 
-class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIPickerViewDelegate, UIPickerViewDataSource, UIScrollViewDelegate {
+class cineCropVC: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIPickerViewDelegate, UIPickerViewDataSource, UIScrollViewDelegate {
     
     //MARK: Constants and Variables
     
@@ -69,6 +69,18 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         }
     }
     
+    func getLBImage(size: CGSize, color: UIColor) -> UIImage {
+        
+        let lbRect = CGRect(origin: CGPointMake(0,0), size: CGSizeMake(size.width, (size.width - size.height) / 2))
+        UIGraphicsBeginImageContextWithOptions(lbRect.size, false, 0)
+        color.setFill()
+        UIRectFill(lbRect)
+        let lbImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return lbImage
+        
+    }
+    
     func exportVideo() {
         
         //Create video composition
@@ -77,9 +89,10 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             videoComposition.frameDuration = CMTimeMake(1, 60)
             videoComposition.renderSize = model.getFrame().size
             
-            //to prevent green lines on bottom and side, rendersize must be divisible by 2
             videoComposition.renderSize.height -= videoComposition.renderSize.height % 2
             videoComposition.renderSize.width -= videoComposition.renderSize.width % 2
+
+            //to prevent green lines on bottom and side, rendersize must be divisible by 2
             
             let preferredTransform = track.preferredTransform
             
@@ -99,6 +112,48 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             instructions.layerInstructions = [transformer]
             videoComposition.instructions = [instructions]
             
+            if lbRatio == "1:1" || lbRatio == "16:9" {
+                
+                let frameHeight = lbRatio == "1:1" ? videoComposition.renderSize.width : videoComposition.renderSize.width / (16.0 / 9.0)
+                
+                let frameColor: UIColor = lbColor == "white" ? UIColor.whiteColor() : UIColor.blackColor()
+                
+                let lbHeight = (frameHeight - videoComposition.renderSize.height) / 2
+                
+                let lbRect = CGRect(origin: CGPointMake(0,0), size: CGSizeMake(videoComposition.renderSize.width, lbHeight))
+                
+                UIGraphicsBeginImageContextWithOptions(lbRect.size, false, 0)
+                frameColor.setFill()
+                UIRectFill(lbRect)
+                let lbImage = UIGraphicsGetImageFromCurrentImageContext()
+                UIGraphicsEndImageContext()
+                
+                let lbLayerBottom = CALayer()
+                lbLayerBottom.contents = lbImage.CGImage
+                lbLayerBottom.frame = CGRectMake(0, 0, lbImage.size.width, lbHeight)
+                lbLayerBottom.masksToBounds = false
+                
+                let lbLayerTop = CALayer()
+                lbLayerTop.contents = lbImage.CGImage
+                lbLayerTop.frame = CGRectMake(0, (lbHeight + videoComposition.renderSize.height), lbImage.size.width, lbHeight)
+                lbLayerTop.masksToBounds = false
+                
+                let videoLayer = CALayer()
+                videoLayer.frame = CGRectMake(0, -lbHeight, videoComposition.renderSize.width, frameHeight)
+                
+                videoComposition.renderSize.height = frameHeight
+        
+                let parentLayer = CALayer()
+                parentLayer.addSublayer(videoLayer)
+                parentLayer.addSublayer(lbLayerBottom)
+                parentLayer.addSublayer(lbLayerTop)
+                
+                videoComposition.animationTool = AVVideoCompositionCoreAnimationTool(postProcessingAsVideoLayer: videoLayer, inLayer: parentLayer)
+        
+            }
+            
+            print("renderSize : \(videoComposition.renderSize)")
+
             let exportURL = createExportURL()
             
             //TODO: Should save as .mp4 as well?
@@ -118,9 +173,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                     let assetsLibrary = ALAssetsLibrary()
                     if assetsLibrary.videoAtPathIsCompatibleWithSavedPhotosAlbum(exporter.outputURL) {
                         UISaveVideoAtPathToSavedPhotosAlbum(exporter.outputURL!.path!, self, "image:didFinishSavingWithError:contextInfo:", nil)
-                        print("Video Saved to Camera Roll")
-                    } else {
-                        print("Video not compaltible with Camera Roll")
+                        //print("Video Saved to Camera Roll")
                     }
                 } else {
                     self.errLabel.hidden = false
@@ -155,16 +208,16 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         var ty: CGFloat = 0.0
         
         switch orientation {
-        case "up": print("switchUP")
+        case "up": //print("switchUP")
         tx = -scrollView.contentOffset.y * model.scale
         ty = scrollView.contentOffset.x * model.scale
-        case "left": print("switchLEFT")
+        case "left": //print("switchLEFT")
         tx = -scrollView.contentOffset.x * model.scale
         ty = -scrollView.contentOffset.y * model.scale
-        case "right": print("switchRight")
+        case "right": //print("switchRight")
         tx = scrollView.contentOffset.x * model.scale
         ty = scrollView.contentOffset.y * model.scale
-        case "down": print("switchDown")
+        case "down": //print("switchDown")
         tx = scrollView.contentOffset.y * model.scale
         ty = -scrollView.contentOffset.x * model.scale
         default: print("default")
@@ -336,6 +389,32 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     func getCropOrigin() -> CGFloat {
             let position = (view.bounds.height / 3) - (scrollView.frame.height / 2)
             return position
+    }
+    
+    let lbRatios = [1, 16/9]
+    let lbColors = ["black", "white"]
+    
+    var lbRatio = "none"
+    var lbColor = "white"
+    
+    
+    @IBAction func lbRatioChanged(sender: UISegmentedControl) {
+        let segIdx = sender.selectedSegmentIndex
+        switch segIdx {
+        case 0: lbRatio = "none"
+        case 1: lbRatio = "1:1"
+        case 2: lbRatio = "16:9"
+        default: lbRatio = "none"
+        }
+    }
+    
+    @IBAction func lbColorChanged(sender: AnyObject) {
+        let segIdx = sender.selectedSegmentIndex
+        switch segIdx {
+        case 0: lbColor = "white"
+        case 1: lbColor = "black"
+        default: lbColor = "white"
+        }
     }
 
     func setZoomScale(size: CGSize) {
