@@ -60,6 +60,9 @@ class cineCropVC: UIViewController, UIImagePickerControllerDelegate, UINavigatio
                 
                 var imageToSave = UIImage(CGImage: imageRef, scale: 1.0, orientation: orientedImage.imageOrientation)
                 
+                
+                //Adds letterbox of 1:1 or 16:9 to image
+                
                 if lbRatio != "none" {
                     
                     let frameHeight = lbRatio == "1:1" ? imageToSave.size.width : imageToSave.size.width / (16/9)
