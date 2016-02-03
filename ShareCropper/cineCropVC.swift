@@ -57,8 +57,32 @@ class cineCropVC: UIViewController, UIImagePickerControllerDelegate, UINavigatio
             let orientedImage = fixOrientation(model.pickedImage!)
             
             if let imageRef = CGImageCreateWithImageInRect(orientedImage.CGImage, model.getFrame()) {
-                let imageToSave = UIImage(CGImage: imageRef, scale: 1.0, orientation: orientedImage.imageOrientation)
+                
+                var imageToSave = UIImage(CGImage: imageRef, scale: 1.0, orientation: orientedImage.imageOrientation)
+                
+                if lbRatio != "none" {
+                    
+                    let frameHeight = lbRatio == "1:1" ? imageToSave.size.width : imageToSave.size.width / (16/9)
+                    let frameRect = CGRect(x: 0, y: 0, width: imageToSave.size.width, height: frameHeight)
+                    let fillColor = lbColor == "white" ? UIColor.whiteColor() : UIColor.blackColor()
+                    UIGraphicsBeginImageContextWithOptions(frameRect.size, false, 0)
+                    fillColor.setFill()
+                    UIRectFill(frameRect)
+                    let lbImage = UIGraphicsGetImageFromCurrentImageContext()
+                    UIGraphicsEndImageContext()
+                    
+                    let newSize = CGSize(width: lbImage.size.width, height: lbImage.size.height)
+                    UIGraphicsBeginImageContext(newSize)
+                    lbImage.drawInRect(CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height))
+                    let imageOrigin = newSize.height / 2 - (imageToSave.size.height / 2)
+                    imageToSave.drawInRect(CGRect(x: 0, y: imageOrigin, width: newSize.width, height: imageToSave.size.height))
+                    imageToSave = UIGraphicsGetImageFromCurrentImageContext()
+                    UIGraphicsEndImageContext()
+                    
+                }
+                
                 UIImageWriteToSavedPhotosAlbum(imageToSave, self, "image:didFinishSavingWithError:contextInfo:", nil)
+                
             }
             
 //      VIDEO
@@ -69,17 +93,39 @@ class cineCropVC: UIViewController, UIImagePickerControllerDelegate, UINavigatio
         }
     }
     
-    func getLBImage(size: CGSize, color: UIColor) -> UIImage {
-        
-        let lbRect = CGRect(origin: CGPointMake(0,0), size: CGSizeMake(size.width, (size.width - size.height) / 2))
-        UIGraphicsBeginImageContextWithOptions(lbRect.size, false, 0)
-        color.setFill()
-        UIRectFill(lbRect)
-        let lbImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        return lbImage
-        
+    var lbRatio = "none"
+    var lbColor = "white"
+    
+    @IBAction func lbRatioChanged(sender: UISegmentedControl) {
+        let segIdx = sender.selectedSegmentIndex
+        switch segIdx {
+        case 0: lbRatio = "none"
+        case 1: lbRatio = "1:1"
+        case 2: lbRatio = "16:9"
+        default: lbRatio = "none"
+        }
     }
+    
+    @IBAction func lbColorChanged(sender: AnyObject) {
+        let segIdx = sender.selectedSegmentIndex
+        switch segIdx {
+        case 0: lbColor = "white"
+        case 1: lbColor = "black"
+        default: lbColor = "white"
+        }
+    }
+    
+//    func getLBImage(size: CGSize, color: UIColor) -> UIImage {
+//        
+//        let lbRect = CGRect(origin: CGPointMake(0,0), size: CGSizeMake(size.width, (size.width - size.height) / 2))
+//        UIGraphicsBeginImageContextWithOptions(lbRect.size, false, 0)
+//        color.setFill()
+//        UIRectFill(lbRect)
+//        let lbImage = UIGraphicsGetImageFromCurrentImageContext()
+//        UIGraphicsEndImageContext()
+//        return lbImage
+//        
+//    }
     
     func exportVideo() {
         
@@ -112,6 +158,7 @@ class cineCropVC: UIViewController, UIImagePickerControllerDelegate, UINavigatio
             instructions.layerInstructions = [transformer]
             videoComposition.instructions = [instructions]
             
+            //Letterboxing for Instagram
             if lbRatio == "1:1" || lbRatio == "16:9" {
                 
                 let frameHeight = lbRatio == "1:1" ? videoComposition.renderSize.width : videoComposition.renderSize.width / (16.0 / 9.0)
@@ -389,32 +436,6 @@ class cineCropVC: UIViewController, UIImagePickerControllerDelegate, UINavigatio
     func getCropOrigin() -> CGFloat {
             let position = (view.bounds.height / 3) - (scrollView.frame.height / 2)
             return position
-    }
-    
-    let lbRatios = [1, 16/9]
-    let lbColors = ["black", "white"]
-    
-    var lbRatio = "none"
-    var lbColor = "white"
-    
-    
-    @IBAction func lbRatioChanged(sender: UISegmentedControl) {
-        let segIdx = sender.selectedSegmentIndex
-        switch segIdx {
-        case 0: lbRatio = "none"
-        case 1: lbRatio = "1:1"
-        case 2: lbRatio = "16:9"
-        default: lbRatio = "none"
-        }
-    }
-    
-    @IBAction func lbColorChanged(sender: AnyObject) {
-        let segIdx = sender.selectedSegmentIndex
-        switch segIdx {
-        case 0: lbColor = "white"
-        case 1: lbColor = "black"
-        default: lbColor = "white"
-        }
     }
 
     func setZoomScale(size: CGSize) {
