@@ -16,11 +16,10 @@ import AssetsLibrary
 
 class cineCropVC: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIPickerViewDelegate, UIPickerViewDataSource, UIScrollViewDelegate {
     
-    //MARK: Constants and Variables
     
     let model = CinemaCropperModel()
     
-    // Title for UIPickerController
+    // Titles for UIPickerController
     let pickerTitleArr = [  "Academy [1.33:1]",
                             "European WS [1.66:1]",
                             "HDTV [16:9]",
@@ -29,25 +28,28 @@ class cineCropVC: UIViewController, UIImagePickerControllerDelegate, UINavigatio
                             "Anamorphic [2.35:1]",
                             "Cinerama [2.77:1]" ]
     
-    // Variables
     var imageView: UIImageView!
     var scrollView: UIScrollView!
-    
+    var lbView: UIView?
+    var lbRatio = "none"
+    var lbColor = "white"
+   
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
-    //MARK: Outlets and Actions
-
     @IBOutlet weak var pickerView: UIPickerView!
-    
-    //MARK: Save
-    
     @IBOutlet weak var errLabel: UILabel!
-    
     @IBOutlet weak var saveButton: UIBarButtonItem!
-    
+    @IBOutlet weak var lbColorSegControl: UISegmentedControl!
+    @IBOutlet weak var lbRatioSegControl: UISegmentedControl!
+
+    //MARK: Save
+
+    //Save button has been pressed. Image or video is saved to camera roll.
     @IBAction func savePressed(sender: AnyObject) {
+        
         if errLabel.hidden == false {
             errLabel.hidden = true
         }
+        
         //creates a cropRect based on size of scrollView and scales according to zoom
         model.setFrame(origin: scrollView.contentOffset, size: scrollView.bounds.size, zoom: scrollView.zoomScale)
         
@@ -60,8 +62,7 @@ class cineCropVC: UIViewController, UIImagePickerControllerDelegate, UINavigatio
                 
                 var imageToSave = UIImage(CGImage: imageRef, scale: 1.0, orientation: orientedImage.imageOrientation)
                 
-                
-                //Adds letterbox of 1:1 or 16:9 to image
+                //Checks if letterbox is wanted. Adds letterbox of 1:1 or 16:9 to image
                 
                 if lbRatio != "none" {
                     
@@ -96,10 +97,9 @@ class cineCropVC: UIViewController, UIImagePickerControllerDelegate, UINavigatio
         }
     }
     
-    var lbRatio = "none"
-    var lbColor = "white"
-    
+    //lbRatioControl has been changed. var lbRatio is changed.  lbView is adjusted.
     @IBAction func lbRatioChanged(sender: UISegmentedControl) {
+        
         let segIdx = sender.selectedSegmentIndex
         switch segIdx {
         case 0: lbRatio = "none"
@@ -107,6 +107,33 @@ class cineCropVC: UIViewController, UIImagePickerControllerDelegate, UINavigatio
         case 2: lbRatio = "16:9"
         default: lbRatio = "none"
         }
+        adjustLBView()
+    }
+    
+    
+    func adjustLBView () {
+        if lbView != nil && lbRatio == "none" {
+            lbView!.removeFromSuperview()
+            lbView = nil
+            lbColorSegControl.enabled = false
+        }
+        if lbView == nil && lbRatio != "none" {
+            lbColorSegControl.enabled = true
+            let lbViewHeight = lbRatio == "1:1" ? scrollView.frame.width : scrollView.frame.width / (16/9)
+            lbView = UIView(frame: CGRect(x: 0, y: 0, width: scrollView.frame.width, height: lbViewHeight))
+            let fillColor = lbColor == "white" ? UIColor.whiteColor() : UIColor.blackColor()
+            lbView!.backgroundColor = fillColor
+            lbView!.frame.origin.y = scrollView.frame.origin.y - ((lbView!.frame.height - scrollView.frame.height) / 2)
+            self.view.insertSubview(lbView!, belowSubview: scrollView)
+        } else if lbView != nil && lbView != "none" {
+            UIView.animateWithDuration(0.5, animations: { () -> Void in
+                let lbViewHeight = self.lbRatio == "1:1" ? self.scrollView.frame.width : self.scrollView.frame.width / (16/9)
+                self.lbView!.frame = CGRect(x: 0, y: 0, width: self.scrollView.frame.width, height: lbViewHeight)
+                let lbViewOriginY = self.scrollView.frame.origin.y - ((self.lbView!.frame.height - self.scrollView.frame.height) / 2)
+                self.lbView!.frame.origin.y = lbViewOriginY
+            })
+        }
+        viewDidLayoutSubviews()
     }
     
     @IBAction func lbColorChanged(sender: AnyObject) {
@@ -115,6 +142,11 @@ class cineCropVC: UIViewController, UIImagePickerControllerDelegate, UINavigatio
         case 0: lbColor = "white"
         case 1: lbColor = "black"
         default: lbColor = "white"
+        }
+        let fillColor = lbColor == "white" ? UIColor.whiteColor() : UIColor.blackColor()
+        if lbView != nil {
+            lbView!.backgroundColor = fillColor
+            self.view.insertSubview(lbView!, belowSubview: scrollView)
         }
     }
     
@@ -129,6 +161,14 @@ class cineCropVC: UIViewController, UIImagePickerControllerDelegate, UINavigatio
 //        return lbImage
 //        
 //    }
+    
+    @IBAction func lbDetailPressed(sender: UIButton) {
+        
+        let alert = UIAlertController(title: "Letterbox Option", message: "Instagram only allows a 1:1 or 16:9 aspect ratio. Create a letterbox to avoid cropping.", preferredStyle: UIAlertControllerStyle.Alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
+        presentViewController(alert, animated: true, completion: nil)
+        
+    }
     
     func exportVideo() {
         
@@ -180,7 +220,8 @@ class cineCropVC: UIViewController, UIImagePickerControllerDelegate, UINavigatio
                 
                 let lbLayerBottom = CALayer()
                 lbLayerBottom.contents = lbImage.CGImage
-                lbLayerBottom.frame = CGRectMake(0, 0, lbImage.size.width, lbHeight)
+                // Add 10 to height value to cover bottom edge
+                lbLayerBottom.frame = CGRectMake(0, -10, lbImage.size.width, lbHeight + 10)
                 lbLayerBottom.masksToBounds = false
                 
                 let lbLayerTop = CALayer()
@@ -404,6 +445,9 @@ class cineCropVC: UIViewController, UIImagePickerControllerDelegate, UINavigatio
         setZoomScale(imageView.bounds.size)
         centerImageInScrollView()
         saveButton.enabled = true
+        pickerView.userInteractionEnabled = true
+        lbRatioSegControl.enabled = true
+        
     }
     
     func vidSnapshot(vidURL: NSURL) -> UIImage? {
@@ -458,6 +502,7 @@ class cineCropVC: UIViewController, UIImagePickerControllerDelegate, UINavigatio
     //MARK: LIFECYCLE
     
     override func viewDidLoad() {
+        
         super.viewDidLoad()
         pickerView.delegate = self
         pickerView.dataSource = self
@@ -475,9 +520,9 @@ class cineCropVC: UIViewController, UIImagePickerControllerDelegate, UINavigatio
         super.viewWillAppear(animated)
         
         scrollView.frame.origin.y = getCropOrigin()
-        scrollView.layer.borderWidth = 1
-        scrollView.layer.borderColor = UIColor.whiteColor().CGColor
-
+//        scrollView.layer.borderWidth = 1
+//        scrollView.layer.borderColor = UIColor.whiteColor().CGColor
+        
     }
     
     override func didReceiveMemoryWarning() {

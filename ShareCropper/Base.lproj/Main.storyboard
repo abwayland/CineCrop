@@ -18,12 +18,12 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <pickerView contentMode="scaleToFill" showsSelectionIndicator="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tvj-zi-t3F">
+                            <pickerView userInteractionEnabled="NO" contentMode="scaleToFill" showsSelectionIndicator="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tvj-zi-t3F">
                                 <rect key="frame" x="20" y="351" width="560" height="153"/>
                                 <color key="backgroundColor" red="0.20000000298023224" green="0.20000000298023224" blue="0.20000000298023224" alpha="1" colorSpace="calibratedRGB"/>
                                 <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="153" id="I3T-0g-dy1"/>
+                                    <constraint firstAttribute="height" constant="153" id="ubk-Zw-vRt"/>
                                 </constraints>
                             </pickerView>
                             <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Error Saving to Camera Roll. Try Again." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HXi-ba-Vkx">
@@ -36,7 +36,7 @@
                             <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="white" translatesAutoresizingMaskIntoConstraints="NO" id="N2Q-xD-0So">
                                 <rect key="frame" x="290" y="93" width="20" height="20"/>
                             </activityIndicatorView>
-                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="9mX-CG-cjH">
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="9mX-CG-cjH">
                                 <rect key="frame" x="479" y="520" width="101" height="29"/>
                                 <segments>
                                     <segment title="White"/>
@@ -47,7 +47,7 @@
                                     <action selector="lbColorChanged:" destination="BYZ-38-t0r" eventType="valueChanged" id="mLT-cB-1kc"/>
                                 </connections>
                             </segmentedControl>
-                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="aSm-F1-05H">
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="aSm-F1-05H">
                                 <rect key="frame" x="328" y="520" width="143" height="29"/>
                                 <segments>
                                     <segment title="None"/>
@@ -59,34 +59,35 @@
                                     <action selector="lbRatioChanged:" destination="BYZ-38-t0r" eventType="valueChanged" id="sOJ-Xt-0BY"/>
                                 </connections>
                             </segmentedControl>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Border" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DdS-lR-K1G">
-                                <rect key="frame" x="268" y="527" width="52" height="21"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" red="0.60000002379999995" green="0.60000002379999995" blue="0.60000002379999995" alpha="1" colorSpace="calibratedRGB"/>
-                                <nil key="highlightedColor"/>
-                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="detailDisclosure" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nOB-N1-Xyf">
+                                <rect key="frame" x="298" y="523" width="22" height="22"/>
+                                <color key="tintColor" red="0.60000002384185791" green="0.60000002384185791" blue="0.60000002384185791" alpha="1" colorSpace="calibratedRGB"/>
+                                <connections>
+                                    <action selector="lbDetailPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ceT-m0-iIv"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="0.20000000298023224" green="0.20000000298023224" blue="0.20000000298023224" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
-                            <constraint firstItem="Tvj-zi-t3F" firstAttribute="centerX" secondItem="N2Q-xD-0So" secondAttribute="centerX" id="1KE-oa-cuq"/>
-                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="aSm-F1-05H" secondAttribute="bottom" constant="8" symbolic="YES" id="1nY-3D-tmo"/>
-                            <constraint firstItem="9mX-CG-cjH" firstAttribute="baseline" secondItem="aSm-F1-05H" secondAttribute="baseline" id="7DF-2g-9H6"/>
-                            <constraint firstItem="aSm-F1-05H" firstAttribute="top" secondItem="Tvj-zi-t3F" secondAttribute="bottom" constant="16" id="B5g-wY-5at"/>
-                            <constraint firstItem="Tvj-zi-t3F" firstAttribute="trailing" secondItem="9mX-CG-cjH" secondAttribute="trailing" id="Bab-IX-YH7"/>
-                            <constraint firstItem="Tvj-zi-t3F" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="Fs2-f2-SfY"/>
+                            <constraint firstItem="HXi-ba-Vkx" firstAttribute="centerX" secondItem="N2Q-xD-0So" secondAttribute="centerX" id="58x-Nb-exL"/>
+                            <constraint firstItem="9mX-CG-cjH" firstAttribute="baseline" secondItem="aSm-F1-05H" secondAttribute="baseline" id="6m5-2Q-d55"/>
+                            <constraint firstItem="HXi-ba-Vkx" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="BQW-9v-qHz"/>
+                            <constraint firstItem="Tvj-zi-t3F" firstAttribute="centerX" secondItem="N2Q-xD-0So" secondAttribute="centerX" id="K12-ng-rh3"/>
+                            <constraint firstItem="N2Q-xD-0So" firstAttribute="top" secondItem="HXi-ba-Vkx" secondAttribute="bottom" constant="8" symbolic="YES" id="Kbd-MJ-NcB"/>
+                            <constraint firstItem="9mX-CG-cjH" firstAttribute="leading" secondItem="aSm-F1-05H" secondAttribute="trailing" constant="8" symbolic="YES" id="Nuc-yY-UsW"/>
+                            <constraint firstItem="aSm-F1-05H" firstAttribute="centerY" secondItem="nOB-N1-Xyf" secondAttribute="centerY" id="OBB-8L-Ki6"/>
                             <constraint firstItem="Tvj-zi-t3F" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="331" id="Pxr-QL-Kn6"/>
+                            <constraint firstItem="aSm-F1-05H" firstAttribute="leading" secondItem="nOB-N1-Xyf" secondAttribute="trailing" constant="8" symbolic="YES" id="Q88-zI-vGJ"/>
                             <constraint firstItem="Tvj-zi-t3F" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="352" id="QSX-b8-A0A"/>
-                            <constraint firstItem="HXi-ba-Vkx" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="Sxg-cn-Ydh"/>
-                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="DdS-lR-K1G" secondAttribute="bottom" constant="8" symbolic="YES" id="Tey-mF-U0N"/>
-                            <constraint firstItem="N2Q-xD-0So" firstAttribute="centerX" secondItem="HXi-ba-Vkx" secondAttribute="centerX" id="Xzb-wB-QEC"/>
-                            <constraint firstAttribute="trailing" secondItem="HXi-ba-Vkx" secondAttribute="trailing" id="ZHe-OB-b6y"/>
+                            <constraint firstItem="HXi-ba-Vkx" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="YL3-o4-HWU"/>
                             <constraint firstItem="Tvj-zi-t3F" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="358" id="ZVm-Pm-qaQ"/>
-                            <constraint firstItem="N2Q-xD-0So" firstAttribute="top" secondItem="HXi-ba-Vkx" secondAttribute="bottom" constant="8" symbolic="YES" id="bsD-wf-8jP"/>
-                            <constraint firstItem="aSm-F1-05H" firstAttribute="leading" secondItem="DdS-lR-K1G" secondAttribute="trailing" constant="8" symbolic="YES" id="jBG-9a-uut"/>
-                            <constraint firstItem="9mX-CG-cjH" firstAttribute="leading" secondItem="aSm-F1-05H" secondAttribute="trailing" constant="8" symbolic="YES" id="lNW-LF-x8A"/>
+                            <constraint firstItem="Tvj-zi-t3F" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="e6A-XO-yjk"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="aSm-F1-05H" secondAttribute="bottom" constant="8" symbolic="YES" id="gzb-tM-qb1"/>
+                            <constraint firstItem="9mX-CG-cjH" firstAttribute="trailing" secondItem="Tvj-zi-t3F" secondAttribute="trailing" id="iJd-Ee-8SZ"/>
                             <constraint firstItem="Tvj-zi-t3F" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="-20" id="me8-ol-vzn"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="Tvj-zi-t3F" secondAttribute="bottom" id="pb7-W2-Y5p"/>
-                            <constraint firstItem="HXi-ba-Vkx" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="uk8-ir-fBd"/>
+                            <constraint firstItem="aSm-F1-05H" firstAttribute="top" secondItem="Tvj-zi-t3F" secondAttribute="bottom" constant="16" id="v8u-83-SI2"/>
+                            <constraint firstAttribute="trailing" secondItem="HXi-ba-Vkx" secondAttribute="trailing" id="vh5-Sh-x6d"/>
                         </constraints>
                         <variation key="default">
                             <mask key="constraints">
@@ -116,6 +117,8 @@
                     <connections>
                         <outlet property="activityIndicator" destination="N2Q-xD-0So" id="pFJ-Ng-3hx"/>
                         <outlet property="errLabel" destination="HXi-ba-Vkx" id="5XC-ab-Hul"/>
+                        <outlet property="lbColorSegControl" destination="9mX-CG-cjH" id="tVf-Pe-oep"/>
+                        <outlet property="lbRatioSegControl" destination="aSm-F1-05H" id="7VL-us-VTA"/>
                         <outlet property="pickerView" destination="Tvj-zi-t3F" id="ZtH-Of-IkE"/>
                         <outlet property="saveButton" destination="bDF-9Y-Ml8" id="18O-15-fuJ"/>
                     </connections>
